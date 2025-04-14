@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publisher
+  namespace: messaging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: publisher
+  template:
+    metadata:
+      labels:
+        app: publisher
+    spec:
+      containers:
+      - name: publisher
+        image: your-dockerhub-username/publisher-service:latest
+        env:
+        - name: RABBITMQ_URL
+          value: amqp://guest:guest@rabbitmq.messaging.svc.cluster.local:5672/
+        - name: RABBITMQ_QUEUE
+          value: my_queue

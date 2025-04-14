@@ -1,0 +1,29 @@
+# Build stage
+FROM golang:1.20-alpine AS builder
+
+WORKDIR /app
+
+# Copy go.mod and go.sum first for better caching
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
+COPY cmd/publisher/ ./cmd/publisher/
+COPY internal/ ./internal/
+
+# Build the publisher binary
+RUN go build -o publisher ./cmd/publisher
+
+# Run stage
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Copy binary from builder
+COPY --from=builder /app/publisher .
+
+# Expose service port if necessary (not mandatory unless using HTTP endpoints)
+# EXPOSE 8080
+
+# Command to run publisher
+ENTRYPOINT ["./publisher"]

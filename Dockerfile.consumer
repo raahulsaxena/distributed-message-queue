@@ -1,0 +1,29 @@
+# Build stage
+FROM golang:1.20-alpine AS builder
+
+WORKDIR /app
+
+# Copy go.mod and go.sum first
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the source code
+COPY cmd/consumer/ ./cmd/consumer/
+COPY internal/ ./internal/
+
+# Build the consumer binary
+RUN go build -o consumer ./cmd/consumer
+
+# Run stage
+FROM alpine:latest
+
+WORKDIR /root/
+
+# Copy binary from builder
+COPY --from=builder /app/consumer .
+
+# Expose service port if necessary (optional)
+# EXPOSE 8080
+
+# Command to run consumer
+ENTRYPOINT ["./consumer"]
